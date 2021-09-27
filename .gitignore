@@ -1,0 +1,12 @@
+
+# ignore virtualenv
+venv/
+__pycache__/
+
+# temporary
+# TODO remove
+application/migrations
+
+
+# maybe remove this?
+db.sqlite3

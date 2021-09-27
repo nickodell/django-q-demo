@@ -1,0 +1,6 @@
+# Django Q broker definition
+
+redis:
+  image: redis:6
+  ports:
+    - '127.0.0.1:6379:6379'
