@@ -2,6 +2,10 @@
 
 Django Q is a handy library for creating background tasks using Django. This repo contains code samples to easily get going in using it.
 
+![hero](https://i.kym-cdn.com/photos/images/original/001/059/850/546.gif)
+
+
+
 ## Software Setup
 
 To complete this tutorial, you'll need the following software:
@@ -35,13 +39,13 @@ You deploy this code into a Django app, and it works fine - until users start pu
 
 This time limit is 30 second by default. Can you raise this timeout? Yes, a little. But, if you raise it by more than sixty seconds, you run into the timeout of nginx. If you want to raise it by more than *ninety* seconds, you run into the timeout of the user's browser. The further you raise the timeout, the more places you run into new problems.
 
-If you want to do any serious computation, on the scale of minutes, you'll have to do it outside the duration of a single HTTP request.
+If you want to do any serious computation, on the scale of minutes, you'll have to do it outside the duration of a single HTTP request. You'll need to trigger a background process, and have that background process provide the result back to Django. This is what Django Q does for you.
 
 ## Django Q
 
-Django Q has two different components: the Django server, and the task queue server. The Django server is the same as it always is, and responds to HTTP requests from the user. The task queue server is responsible for receiving tasks from the Django server, processing them, and sending the result back to the Django server.
+Django Q has three different components: the Django server, the task broker, and the task queue server. The Django server is the same as it always is, and responds to HTTP requests from the user. If a request requires background processing, then it can send a task to the broker. The task queue server is responsible for receiving tasks from the broker, processing them, and sending the result back to the broker.
 
-(drawing of Django receiving HTTP requests, task server receiving tasks, and the replies to both)
+![drawing of Django receiving HTTP requests, task server receiving tasks, and the replies to both](https://i.imgur.com/jCdrHty.png)
 
 But what is a task? It's anything in Python which fulfills three qualities:
 
@@ -62,10 +66,6 @@ But what is a task? It's anything in Python which fulfills three qualities:
 4. Go to http://localhost:8000/sum-start/?n=100000000
 
    That will give you a URL containing the task id. You can click on it, and see the output from the task. (Assuming it has finished. You may need to refresh a few times.)
-
-## Understanding how it works
-
-TODO
 
 ## Debugging a failing task
 
@@ -101,4 +101,24 @@ Use the information you've found to fix the bug in tasks.py.
 
 ## Parallelism
 
-One of the ways we can make this faster is to identify pieces of it that we can do in parallel.
+One of the ways we can make this faster is to identify pieces of it that we can do in parallel. If we have the sum
+
+>1 + 2 + ... + 9 + 10 + 11 + 12 + ... + 19 + 20
+
+We can break this up into two sums:
+
+>(1 + 2 + ... + 9 + 10) + (11 + 12 + ... + 19 + 20)
+
+Then, those two sums can be evaluated independently. Afterwards, the two sums can be added together to get the result. 
+
+
+There is a tradeoff in how finely to split a sum into multiple pieces: 
+
+ * if you split it into pieces which are too large, then you will not benefit from parallelism.
+ * if you split it into pieces which are too small, then the overhead from creating tasks and putting together the results from all of the tasks will be too big.
+
+You should aim for the pieces to take about 5-30 seconds to process.
+
+## Scaling higher than one node
+
+Django Q can scale to multiple task servers, because the task servers can fetch tasks from the broker over the network. It can also scale to multiple Django servers, because those servers can submit tasks to the broker over the network. This is why Django Q uses a broker. You don't need to do anything when writing tasks to enable this.
