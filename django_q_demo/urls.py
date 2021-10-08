@@ -32,5 +32,5 @@ urlpatterns = [
 
     # Use tasks to parallelize a function
     path('split-sum-start/', views.SplitSumAsyncStartView().as_view(), name='split-sum-async-start'),
-    path('split-sum-check/', views.SplitSumAsyncProgressView().as_view(), name='split-sum-async-start'),
+    path('split-sum-check/', views.SplitSumAsyncProgressView().as_view(), name='split-sum-async-progress'),
 ]
