@@ -20,15 +20,10 @@ def get_sum_buggy(n):
     return total
 
 
-def get_sum_range(sj, n, m):
+def get_sum_range(n, m):
     """Sum from n to m.  Note that range is inclusive."""
     total = 0
     for i in range(n, m + 1):
         total += i
-    # Submit to DB
-    models.SumJobComponent.objects.create(
-        parent_job=sj,
-        result=total,
-    )
 
     return total
