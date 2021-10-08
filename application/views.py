@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
-from django_q.tasks import async_task, result, fetch
+from django_q.tasks import async_task, result, fetch, async_iter, Iter
 
 from . import tasks, models
 
@@ -27,9 +27,7 @@ class SumView(APIView):
             n = int(request.GET.get('n'))
         except:
             raise APIException("Must provide ?n=<integer> parameter")
-        total = 0
-        for i in range(1, n + 1):
-            total += i
+        total = tasks.get_sum(n)
 
         return Response({'total': total})
 
@@ -91,29 +89,22 @@ class SplitSumAsyncStartView(APIView):
             else:
                 chunks.append((i, n))
 
-        # Create job in database to attach this data to
-        sj = models.SumJob.objects.create()
-
         # Loop over chunks and send each to task server
-        for chunk in chunks:
-            n, m = chunk
-            async_task(tasks.get_sum_range, sj, n, m)
+        task = async_iter(tasks.get_sum_range, chunks)
 
+        progress_url = request.build_absolute_uri(reverse('split-sum-async-progress') + f"?task_id={task}")
 
-        # return Response({'total': sum(map(lambda x: tasks.get_sum_range(*x), chunks))})
-        return Response({'job_id': sj.id})
+        return Response({'task_progress': progress_url})
+
 
 class SplitSumAsyncProgressView(APIView):
-    """Combine the output of many tasks."""
+    """Get the output of a task."""
     def get(self, request):
-        try:
-            job_id = int(request.GET.get('job_id'))
-        except:
-            raise APIException("Must provide ?job_id=<job> parameter")
+        task_id = request.GET.get('task_id')
+        if task_id is None:
+            raise APIException("Must provide ?task_id=<task> parameter")
+        task_result = result(task_id, wait=0)
+        status = get_status(task_id, wait=0)
+        total = sum(task_result) if task_result is not None else 0
 
-        sj = models.SumJob.objects.get(id=job_id)
-        results = models.SumJobComponent.objects \
-            .filter(parent_job=sj) \
-            .values_list('result', flat=True)
-
-        return Response({'total': sum(results)})
+        return Response({'status': status, 'raw': task_result, 'total': total})
