@@ -47,12 +47,6 @@ Django Q has three different components: the Django server, the task broker, and
 
 ![drawing of Django receiving HTTP requests, task server receiving tasks, and the replies to both](https://i.imgur.com/jCdrHty.png)
 
-But what is a task? It's anything in Python which fulfills three qualities:
-
-1. It is callable. (Example: a function is callable.)
-2. The arguments to it are [pickleable](https://stackoverflow.com/questions/3603581/what-does-it-mean-for-an-object-to-be-picklable-or-pickle-able).
-3. It doesn't need to be finished before an HTTP response is sent back to the user.
-
 ## Getting Started
 
 1. Create a new terminal. Run `docker-compose up`. Leave it running. This runs the task broker.
@@ -66,6 +60,16 @@ But what is a task? It's anything in Python which fulfills three qualities:
 5. Go to http://localhost:8000/sum-sync/?n=1000
 
    This is the synchronous version, which we're going to convert to an asynchronous version.
+
+## Submitting a task
+
+To do processing in the background, we're going to submit TODO 
+
+But what is a task? It's anything in Python which fulfills three qualities:
+
+1. It is callable. (Example: a function is callable.)
+2. The arguments to it are [pickleable](https://stackoverflow.com/questions/3603581/what-does-it-mean-for-an-object-to-be-picklable-or-pickle-able).
+3. It doesn't need to be finished before an HTTP response is sent back to the user.
 
 ## Debugging a failing task
 
@@ -116,11 +120,11 @@ In order to parallelize tasks, there are two approaches.
  1. Call `async_task()` multiple times. Since this doesn't wait for the task to finish, you can call it multiple times to do multiple tasks in parallel.
  2. Use the `async_iter()` helper, which creates multiple tasks from an iterable. The first argument is the callable, and the second argument is a list of arguments to provide to each call to the function. The format of the call is similar to the Python builtin map().
 
-The provided code uses `async_iter()`.
+The provided code uses the latter approach.
 
 ### Chunk size
 
-There is a tradeoff in how finely to split a task into multiple pieces: 
+There is a trade-off in how finely to split a task into multiple pieces: 
 
  * if you split it into pieces which are too large, then you will not benefit from parallelism.
  * if you split it into pieces which are too small, then the overhead from creating tasks and putting together the results from all of the tasks will be too big.
