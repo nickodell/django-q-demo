@@ -27,7 +27,7 @@ Imagine you're developing a data analysis program for DataCo. DataCo has a highl
 ```py
 total = 0
 for i in range(1, n + 1):
-	total += i
+    total += i
 ```
 
 You deploy this code into a Django app, and it works fine - until users start putting larger values into the app. Ten million works fine, a hundred million is a little slow, and three billion takes so long that gunicorn will kill the worker for taking so long:
@@ -43,7 +43,7 @@ If you want to do any serious computation, on the scale of minutes, you'll have 
 
 ## Django Q
 
-Django Q has three different components: the Django server, the task broker, and the task queue server. The Django server is the same as it always is, and responds to HTTP requests from the user. If a request requires background processing, then it can send a task to the broker. The task queue server is responsible for receiving tasks from the broker, processing them, and sending the result back to the broker.
+Django Q has three different components: the Django server, the task broker, and the task queue server. The Django server responds to HTTP requests from the user. If a request requires background processing, then it can send a task to the broker. The broker is responsible for communicating between Django and the task queue server. The task queue server is responsible for receiving tasks from the broker, processing them, and sending the result back to the broker.
 
 ![drawing of Django receiving HTTP requests, task server receiving tasks, and the replies to both](https://i.imgur.com/jCdrHty.png)
 
