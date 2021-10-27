@@ -1,4 +1,5 @@
 django
 django-q
+django-redis
 gunicorn
 djangorestframework
