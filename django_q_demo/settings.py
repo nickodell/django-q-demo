@@ -138,7 +138,7 @@ Q_CLUSTER = {
         'port': 6379,
         'db': 0,
         'password': None,
-        'socket_timeout': None,
+        'socket_timeout': 5,
         'charset': 'utf-8',
         'errors': 'strict',
     },
