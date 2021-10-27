@@ -81,6 +81,7 @@ result = async_task(tasks.get_sum, n)
 
 This creates a task which calls the tasks.get_sum() function in the background, using n as an argument. It returns a result object.
 
+Try this out. Go to http://localhost:8000/sum-start/?n=1000. It will give you a link.
 
 ## Debugging a failing task
 
