@@ -197,5 +197,3 @@ In order to add a Django Q support to a new project, you must do the following:
        }
    }
    ```
-
-## 
